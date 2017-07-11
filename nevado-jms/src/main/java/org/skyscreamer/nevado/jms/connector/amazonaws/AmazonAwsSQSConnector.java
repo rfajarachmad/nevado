@@ -61,12 +61,6 @@ public class AmazonAwsSQSConnector extends AbstractSQSConnector {
 
     public AmazonAwsSQSConnector(String awsAccessKey, String awsSecretKey, boolean isSecure, long receiveCheckIntervalMs, boolean isAsync) {
         super(receiveCheckIntervalMs, isAsync);
-        AWSCredentials awsCredentials;
-        if(StringUtils.isNotEmpty(awsAccessKey) && StringUtils.isNotEmpty(awsSecretKey)) {
-            awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-        } else {
-            awsCredentials = new InstanceProfileCredentialsProvider().getCredentials();
-        }
         ClientConfiguration clientConfiguration = new ClientConfiguration();
         String proxyHost = System.getProperty("http.proxyHost");
         String proxyPort = System.getProperty("http.proxyPort");
@@ -78,12 +72,11 @@ public class AmazonAwsSQSConnector extends AbstractSQSConnector {
         }
         clientConfiguration.setProtocol(isSecure ? Protocol.HTTPS : Protocol.HTTP);
         if (isAsync) {
-            ExecutorService executorService = Executors.newSingleThreadExecutor();
-            _amazonSQS = new AmazonSQSAsyncClient(awsCredentials, clientConfiguration, executorService);
-            _amazonSNS = new AmazonSNSAsyncClient(awsCredentials, clientConfiguration, executorService);
+            _amazonSQS = new AmazonSQSAsyncClient(clientConfiguration);
+            _amazonSNS = new AmazonSNSAsyncClient(clientConfiguration);
         } else {
-            _amazonSQS = new AmazonSQSClient(awsCredentials, clientConfiguration);
-            _amazonSNS = new AmazonSNSClient(awsCredentials, clientConfiguration);
+            _amazonSQS = new AmazonSQSClient(clientConfiguration);
+            _amazonSNS = new AmazonSNSClient(clientConfiguration);
         }
     }
 
